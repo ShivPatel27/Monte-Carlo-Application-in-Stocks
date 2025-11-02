@@ -1,125 +1,89 @@
-📈 Monte Carlo Stock Price Prediction (Fortran)
+# Monte Carlo Stock Price Prediction (Fortran)
 
-This project implements a Monte Carlo simulation using the Geometric Brownian Motion (GBM) model to estimate the probability that a stock’s price will increase over one year, based on historical data.
+This project uses the **Geometric Brownian Motion (GBM)** model with a **Monte Carlo simulation** to estimate the probability that a stock’s price will increase over one year, based on historical data.
 
-It uses real stock data (for example, NVidia) to calculate drift (μ) and volatility (σ) from the daily Close prices, then simulates thousands of possible one-year outcomes.
+The program reads a CSV file of historical stock prices (e.g. NVidia), calculates the drift (μ) and volatility (σ) from daily *Close* prices, and simulates thousands of possible one-year outcomes.
 
-🧮 Theory
+---
 
-The model assumes the stock follows Geometric Brownian Motion (GBM):
+## Theory
 
-𝑆
-𝑇
-=
-𝑆
-0
- 
-𝑒
-(
-𝜇
-−
-1
-2
-𝜎
-2
-)
-𝑇
-+
-𝜎
-𝑇
-𝑍
-S
-T
-	​
+The stock price is modeled as a stochastic process following the Geometric Brownian Motion equation:
 
-=S
-0
-	​
+\[
+S_T = S_0 \, e^{(\mu - \frac{1}{2}\sigma^2)T + \sigma \sqrt{T} Z}
+\]
 
-e
-(μ−
-2
-1
-	​
+Where:  
+- **S₀** — current stock price (latest closing price)  
+- **Sₜ** — simulated future price  
+- **μ** — mean daily return (drift)  
+- **σ** — volatility (standard deviation of returns)  
+- **T** — time in years (1.0 by default)  
+- **Z** — random variable drawn from a standard normal distribution  
 
-σ
-2
-)T+σ
-T
-	​
+The probability that the stock price increases is given by:
 
-Z
+\[
+P(\text{Price Up}) = \frac{\text{Number of simulations where } S_T > S_0}{N}
+\]
 
-where
+---
 
-S₀ – current stock price (latest closing price)
+## Features
 
-Sₜ – simulated future price
+- Reads real historical stock data from a CSV file  
+- Automatically extracts the “Close” column  
+- Calculates drift (μ) and volatility (σ) from log returns  
+- Simulates price paths using Monte Carlo GBM  
+- Outputs the probability that the price goes up or down after one year  
 
-μ – mean return (drift)
+---
 
-σ – standard deviation of returns (volatility)
+## File Structure
 
-T – time horizon in years (default 1.0)
-
-Z – random variable ~ Normal(0,1)
-
-After running many simulations, the model estimates the probability that the price will go up:
-
-P(\text{Price Up}) = \frac{\text{# of times } S_T > S_0}{N}
-⚙️ Features
-
-Reads a real CSV file of historical stock data (e.g. from Yahoo Finance)
-
-Automatically extracts the “Close” column
-
-Estimates drift (μ) and volatility (σ) from log returns
-
-Runs Monte Carlo simulations using GBM
-
-Prints probabilities of price going up or down after one year
-
-🗂️ File Structure
+```
 .
-├── gbm_from_csv.f90              # Main Fortran source code
-├── NVidia_stock_history.csv      # Example input data (Yahoo Finance format)
-└── README.md                     # Project documentation
+├── cp_cca.f90                     # Main Fortran source code
+├── NVidia_stock_history.csv       # Example stock data
+└── README.md                      # Documentation
+```
 
-🧾 How It Works
+---
 
-Reads daily closing prices from NVidia_stock_history.csv
+## How It Works
 
-Computes log returns: r_t = log(S_{t+1}/S_t)
+1. Reads the “Close” prices from `NVidia_stock_history.csv`  
+2. Calculates daily log returns:  
+   `r_t = log(S_{t+1}/S_t)`  
+3. Computes drift (μ) and volatility (σ)  
+4. Simulates future price paths for one year using GBM  
+5. Estimates the probability that the price will go up  
 
-Calculates drift (μ) and volatility (σ)
+---
 
-Simulates price paths for 1 year using GBM
+## Requirements
 
-Counts how many simulated final prices are greater than the starting price
+- **gfortran** (any modern version)
+- A CSV file with columns like:  
+  `Date,Open,High,Low,Close,Adj Close,Volume`
 
-Outputs probabilities for price increase and decrease
+---
 
-🧰 Requirements
+## Usage
 
-gfortran (any recent version)
+**Compile:**
+```bash
+gfortran cp_cca.f90 -o cp_cca
+```
 
-Historical stock CSV file with columns like:
-Date,Open,High,Low,Close,Adj Close,Volume
+**Run:**
+```bash
+./cp_cca
+```
 
-🧾 Example Usage
-
-Compile:
-
-gfortran gbm_from_csv.f90 -o gbm_from_csv
-
-
-Run:
-
-./gbm_from_csv
-
-
-Example Output:
-
+**Example Output:**
+```
 -----------------------------------------
 Loaded 252 price points from NVidia_stock_history.csv
 Estimated mu (drift): 0.000450
@@ -129,27 +93,25 @@ Starting Price (last close): 135.64
 Probability Price Goes Up:   0.6150
 Probability Price Goes Down: 0.3850
 -----------------------------------------
+```
 
-🧩 Parameters You Can Edit
+---
+
+## Adjustable Parameters
 
 Inside the code:
+```fortran
+integer, parameter :: n_sim = 100000   ! Number of simulations
+real(dp) :: T = 1.0_dp                 ! Time horizon (1 year)
+```
 
-integer, parameter :: n_sim = 100000   ! number of Monte Carlo simulations
-real(dp) :: T = 1.0_dp                 ! time horizon (1 year)
+You can modify `T` to simulate different durations, e.g. 0.5 for half a year or 2.0 for two years.
 
+---
 
-Change these to simulate different durations or improve accuracy.
+## Future Improvements
 
-📊 Ideas for Extension
-
-Run for multiple time horizons (1 month, 6 months, 1 year)
-
-Plot simulated price distributions using Python or gnuplot
-
-Add variance reduction techniques (antithetic variates)
-
-Compare results for different stocks
-
-
-
-
+- Run simulations for multiple time horizons  
+- Plot price distribution using Python or gnuplot  
+- Implement variance reduction (antithetic variates)  
+- Compare different stocks  
